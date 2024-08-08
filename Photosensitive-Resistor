@@ -1,0 +1,69 @@
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+// Define the OLED display width and height in pixels
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+// Define OLED reset pin, set to -1 if sharing Arduino reset pin
+#define OLED_RESET -1
+// Define OLED I2C address
+#define SCREEN_ADDRESS 0x3C
+
+// Create an SSD1306 display object
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+// Define the GPIO pin connected to the photosensitive resistor module
+const int LDR_PIN = 19; 
+
+void setup() {
+  // Initialize serial communication at 115200 baud rate
+  Serial.begin(115200);
+  // Set the LDR pin as an input
+  pinMode(LDR_PIN, INPUT);
+
+  // Initialize the OLED display with the I2C address
+  if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
+    Serial.println(F("SSD1306 allocation failed"));
+    for (;;); // Enter an infinite loop if the display fails to initialize
+  }
+
+  // Clear the display buffer
+  display.clearDisplay();
+  // Send the buffer to the display
+  display.display();
+}
+
+void loop() {
+  // Read the value from the LDR pin (LOW means light detected, HIGH means no light)
+  int ldrValue = digitalRead(LDR_PIN);
+
+  // Determine the brightness status based on the LDR value
+  String brightness;
+  if (ldrValue == LOW) {
+    brightness = "Light detected";
+  } else {
+    brightness = "No light detected";
+  }
+
+  // Clear the display buffer
+  display.clearDisplay();
+  // Set the text size and color
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  // Set the cursor position for the text
+  display.setCursor(0, 0);
+  // Print the brightness status to the display buffer
+  display.print("LDR Status: ");
+  display.print(brightness);
+
+  // Send the buffer to the display
+  display.display();
+
+  // Print the brightness status to the serial monitor
+  Serial.print("LDR Value: ");
+  Serial.println(brightness);
+
+  // Wait for 1 second before taking another reading
+  delay(1000);
+}
